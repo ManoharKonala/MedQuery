@@ -153,41 +153,32 @@ def _generate_extractive_fallback(query: str, chunks: list[dict]) -> str:
     """Fallback Tier 3: Local extractive synthesis from top retrieved chunks.
 
     Formats the extracted passages into a clean, structured Markdown response
-    with key point highlights, clear section blocks, and [Source N] tags.
+    with clear section blocks, page tags, and [Source N] citations.
     """
     lines = [
-        f"### 📋 Key Findings for: *\"{query}\"*\n",
-        "> ℹ️ **Extractive Mode (Offline/No API)**: Displaying top relevant document passages retrieved via vector & reranker search.\n",
+        f"### 📋 Document Search Results: \"{query}\"\n",
+        "*ℹ️ Extractive Mode (Offline/No API): Showing top relevant passages from your uploaded documents.*\n",
     ]
 
     for i, chunk in enumerate(chunks[:3]):
-        doc_title = chunk.get("metadata", {}).get("document_title", "Document")
-        page_num = chunk.get("metadata", {}).get("page_number")
-        section_hdr = chunk.get("metadata", {}).get("section_header", "")
+        metadata = chunk.get("metadata", {})
+        doc_title = metadata.get("document_title", "Document")
+        page_num = metadata.get("page_number")
+        section_hdr = metadata.get("section_header", "")
 
         page_info = f" (Page {page_num})" if page_num else ""
-        section_info = f" • Section: `{section_hdr}`" if section_hdr and section_hdr != "General Information" else ""
+        section_info = f" — `{section_hdr}`" if section_hdr and section_hdr != "General Information" else ""
 
         text_content = chunk["text"].strip()
 
-        lines.append(f"#### 📄 Source {i + 1}: {doc_title}{page_info}{section_info}")
-
-        # Sentence-by-sentence bullet formatting for readability
-        sentences = [s.strip() for s in text_content.replace("\n", " ").split(". ") if s.strip()]
-        if len(sentences) > 1:
-            for sent in sentences[:5]:
-                if not sent.endswith("."):
-                    sent += "."
-                lines.append(f"- {sent} [Source {i + 1}]")
-        else:
-            lines.append(f"> {text_content} [Source {i + 1}]")
-
-        lines.append("")  # Blank spacing line
+        lines.append(f"**Source {i + 1}: {doc_title}{page_info}{section_info}** [Source {i + 1}]")
+        lines.append(f"{text_content}\n")
 
     lines.append("---")
     lines.append("*💡 To enable full AI rephrasing, set your `GEMINI_API_KEY` in `backend/.env`.*")
 
     return "\n".join(lines)
+
 
 
 # ─── MAIN ENTRY POINT (3-TIER CASCADE) ─────────────────────────────
