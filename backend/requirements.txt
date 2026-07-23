@@ -1,0 +1,47 @@
+# Core
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+python-dotenv
+
+# Database
+pg8000
+
+# Vector Store
+chromadb
+
+# ML / Embeddings / Reranker
+sentence-transformers
+torch
+transformers
+numpy
+
+# Chunking
+nltk
+
+# LLM
+google-generativeai
+
+# Model Downloads
+huggingface-hub
+
+# HTTP
+requests
+
+# OCR & PDF
+easyocr
+Pillow
+pdf2image
+PyPDF2
+
+# PII Redaction
+presidio-analyzer
+presidio-anonymizer
+spacy
+
+# Deduplication
+datasketch
+
+# File Upload
+python-multipart
