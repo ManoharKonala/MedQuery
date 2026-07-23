@@ -4,7 +4,7 @@
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![ChromaDB](https://img.shields.io/badge/ChromaDB-FF6F00?style=for-the-badge)](https://www.trychroma.com/)
-[![Python](https://img.shields.io/badge/Python_3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python_3.12.10-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 
 **MedicalQuery RAG** is an end-to-end, production-ready Retrieval-Augmented Generation (RAG) system designed specifically for medical document management, automated parsing, PII redaction, and intelligent Q&A with verifiable source citations.
 
@@ -87,7 +87,7 @@
 
 Before running the application, ensure you have the following installed:
 
-1. **Python 3.10+**
+1. **Python 3.12.10** (`py --version` or `python3.12 --version`)
 2. **Node.js 18+ & npm**
 3. **PostgreSQL 14+** (running locally on port `5432`)
 4. **Poppler** (Required for `pdf2image` PDF rendering)
@@ -120,7 +120,7 @@ psql -U postgres -d medicalquery -f backend/schema.sql
 
 ---
 
-### 2. Backend Setup & Run
+### 2. Backend Setup & Run (Python 3.12.10)
 
 Navigate to the `backend/` directory:
 
@@ -128,16 +128,18 @@ Navigate to the `backend/` directory:
 cd backend
 ```
 
-Create a virtual environment and activate it:
+Create a virtual environment (`venv`) using **Python 3.12.10**:
 ```bash
-# Windows
-python -m venv venv
+# Windows (using Python 3.12 launcher)
+py -3.12 -m venv venv
 venv\Scripts\activate
 
-# Linux / macOS
-python3 -m venv venv
+# Linux / macOS (using Python 3.12 binary)
+python3.12 -m venv venv
 source venv/bin/activate
 ```
+*(Note: The `venv/` directory is automatically ignored by Git via `.gitignore` so local binary environments are not committed).*
+
 
 Install Python dependencies:
 ```bash
