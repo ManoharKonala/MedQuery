@@ -1,13 +1,16 @@
-"""
-Application configuration using Pydantic Settings.
-Loads values from .env file automatically.
-"""
-
+import os
 from pydantic_settings import BaseSettings
 from pydantic import Field
 
+# Store model weights locally in backend/models_cache inside project directory
+models_cache_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "models_cache"))
+os.makedirs(models_cache_dir, exist_ok=True)
+os.environ["HF_HOME"] = models_cache_dir
+os.environ["SENTENCE_TRANSFORMERS_HOME"] = models_cache_dir
+
 
 class Settings(BaseSettings):
+
     """Application settings loaded from environment variables."""
 
     # PostgreSQL

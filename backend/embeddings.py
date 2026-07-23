@@ -17,7 +17,8 @@ def get_model() -> SentenceTransformer:
     if _model is None:
         print(f"[Embeddings] Loading model: {settings.embedding_model}")
         _model = SentenceTransformer(settings.embedding_model)
-        print(f"[Embeddings] Model loaded. Dimension: {_model.get_sentence_embedding_dimension()}")
+        dim = _model.get_embedding_dimension() if hasattr(_model, "get_embedding_dimension") else _model.get_sentence_embedding_dimension()
+        print(f"[Embeddings] Model loaded. Dimension: {dim}")
     return _model
 
 
@@ -38,4 +39,5 @@ def generate_embeddings_batch(texts: list[str]) -> list[list[float]]:
 def get_embedding_dimension() -> int:
     """Return the dimension of the embedding vectors."""
     model = get_model()
-    return model.get_sentence_embedding_dimension()
+    return model.get_embedding_dimension() if hasattr(model, "get_embedding_dimension") else model.get_sentence_embedding_dimension()
+

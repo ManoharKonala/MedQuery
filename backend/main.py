@@ -32,12 +32,23 @@ async def lifespan(app: FastAPI):
         print(f"[Startup] WARNING: Database init failed: {e}")
         print("[Startup] Make sure PostgreSQL is running and credentials are correct.")
 
-    # Pre-warm ChromaDB
+    # Pre-warm Embedding Model, Reranker, and ChromaDB on Startup
     try:
+        from embeddings import get_model
+        from reranker import get_reranker
         from vector_store import get_collection
+
+        print("[Startup] Pre-warming embedding model...")
+        get_model()
+
+        print("[Startup] Pre-warming reranker model...")
+        get_reranker()
+
+        print("[Startup] Pre-warming ChromaDB collection...")
         get_collection()
     except Exception as e:
-        print(f"[Startup] WARNING: ChromaDB init failed: {e}")
+        print(f"[Startup] WARNING: Pre-warming failed: {e}")
+
 
     print("=" * 60)
     print("  MedicalQuery RAG — Ready!")
