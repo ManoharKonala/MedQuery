@@ -23,14 +23,22 @@ _ocr_reader = None
 
 
 def _get_ocr_reader():
-    """Initialize EasyOCR reader (cached after first call)."""
+    """Initialize EasyOCR reader (cached after first call).
+
+    Automatically detects PyTorch CUDA GPU support if available.
+    """
     global _ocr_reader
     if _ocr_reader is None:
         import easyocr
-        print("[OCR] Initializing EasyOCR reader...")
-        _ocr_reader = easyocr.Reader(["en"], gpu=False)
-        print("[OCR] EasyOCR ready.")
+        import torch
+
+        use_gpu = torch.cuda.is_available()
+        device_name = f"GPU ({torch.cuda.get_device_name(0)})" if use_gpu else "CPU"
+        print(f"[OCR] Initializing EasyOCR reader on {device_name}...")
+        _ocr_reader = easyocr.Reader(["en"], gpu=use_gpu)
+        print(f"[OCR] EasyOCR ready on {device_name}.")
     return _ocr_reader
+
 
 
 def _ocr_image(image: Image.Image) -> str:
