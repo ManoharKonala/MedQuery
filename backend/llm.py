@@ -4,7 +4,7 @@ Multi-Tier LLM Answer Synthesis Module with Graceful Fallbacks.
 3-Tier Architecture:
   1. Primary: Google Gemini (gemini-1.5-flash)
   2. Fallback Tier 1: Hugging Face Serverless Inference API (Mistral-7B-Instruct)
-  3. Fallback Tier 2: Extractive Retrieval Fallback (Zero external API dependencies)
+  3. Fallback Tier 2: Local Extractive Retrieval Fallback (Zero external API dependencies)
 """
 
 import re
@@ -150,25 +150,44 @@ def _call_huggingface_mistral(prompt: str) -> str:
 # ─── TIER 3: Local Extractive Retrieval Fallback ────────────────────
 
 def _generate_extractive_fallback(query: str, chunks: list[dict]) -> str:
-    """Fallback Tier 2: Local extractive synthesis from top retrieved chunks.
+    """Fallback Tier 3: Local extractive synthesis from top retrieved chunks.
 
-    Guarantees that an answer is ALWAYS produced locally with zero external API calls.
+    Formats the extracted passages into a clean, structured Markdown response
+    with key point highlights, clear section blocks, and [Source N] tags.
     """
-    answer_lines = [
-        "*(Note: Generated via Extractive Document Summary — LLM APIs unavailable)*\n",
-        f"Key relevant sections found for **\"{query}\"**:\n",
+    lines = [
+        f"### 📋 Key Findings for: *\"{query}\"*\n",
+        "> ℹ️ **Extractive Mode (Offline/No API)**: Displaying top relevant document passages retrieved via vector & reranker search.\n",
     ]
 
     for i, chunk in enumerate(chunks[:3]):
         doc_title = chunk.get("metadata", {}).get("document_title", "Document")
         page_num = chunk.get("metadata", {}).get("page_number")
-        page_info = f" (Page {page_num})" if page_num else ""
-        
-        answer_lines.append(
-            f"**[Source {i + 1}: {doc_title}{page_info}]**\n{chunk['text'].strip()}\n"
-        )
+        section_hdr = chunk.get("metadata", {}).get("section_header", "")
 
-    return "\n".join(answer_lines)
+        page_info = f" (Page {page_num})" if page_num else ""
+        section_info = f" • Section: `{section_hdr}`" if section_hdr and section_hdr != "General Information" else ""
+
+        text_content = chunk["text"].strip()
+
+        lines.append(f"#### 📄 Source {i + 1}: {doc_title}{page_info}{section_info}")
+
+        # Sentence-by-sentence bullet formatting for readability
+        sentences = [s.strip() for s in text_content.replace("\n", " ").split(". ") if s.strip()]
+        if len(sentences) > 1:
+            for sent in sentences[:5]:
+                if not sent.endswith("."):
+                    sent += "."
+                lines.append(f"- {sent} [Source {i + 1}]")
+        else:
+            lines.append(f"> {text_content} [Source {i + 1}]")
+
+        lines.append("")  # Blank spacing line
+
+    lines.append("---")
+    lines.append("*💡 To enable full AI rephrasing, set your `GEMINI_API_KEY` in `backend/.env`.*")
+
+    return "\n".join(lines)
 
 
 # ─── MAIN ENTRY POINT (3-TIER CASCADE) ─────────────────────────────
@@ -203,7 +222,7 @@ def generate_answer(
         print("[LLM] Tier 1 (Gemini) succeeded.")
     except Exception as e_gemini:
         print(f"[LLM] Tier 1 (Gemini) failed: {e_gemini}")
-        
+
         # --- Tier 2: Hugging Face Mistral ---
         try:
             print("[LLM] Attempting Tier 2 (HuggingFace Mistral)...")
