@@ -138,6 +138,7 @@ function Chat() {
       if (match) {
         const idx = parseInt(match[1]);
         const sourceIndexInList = sources.findIndex((s) => s.source_index === idx);
+        const source = sourceIndexInList >= 0 ? sources[sourceIndexInList] : null;
         return (
           <span
             key={i}
@@ -148,6 +149,7 @@ function Chat() {
             📎 Source {idx}
           </span>
         );
+
 
       }
       return <span key={i}>{part}</span>;
