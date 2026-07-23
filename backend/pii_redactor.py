@@ -42,10 +42,17 @@ def redact_pii(text: str, language: str = "en") -> str:
     Returns:
         Redacted text with PII replaced by entity type tags (e.g., <PHONE_NUMBER>).
     """
+    from config import settings
+
     if not text or not text.strip():
         return text
 
+    # If PII Redaction is toggled off in settings, retain raw text
+    if not settings.enable_pii_redaction:
+        return text
+
     try:
+
         analyzer, anonymizer = _get_engines()
         if not analyzer or not anonymizer:
             return text

@@ -17,6 +17,9 @@ class Settings(BaseSettings):
     db_user: str = Field(default="postgres", alias="DB_USER")
     db_password: str = Field(default="postgres", alias="DB_PASSWORD")
 
+    # PII Redaction Control
+    enable_pii_redaction: bool = Field(default=True, alias="ENABLE_PII_REDACTION")
+
     # Google Gemini
     gemini_api_key: str = Field(default="", alias="GEMINI_API_KEY")
 

@@ -18,6 +18,7 @@ function Chat() {
   const [isLoading, setIsLoading] = useState(false);
   const [showCitationDrawer, setShowCitationDrawer] = useState(false);
   const [activeCitations, setActiveCitations] = useState([]);
+  const [expandedCitationIndex, setExpandedCitationIndex] = useState(0);
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -120,8 +121,9 @@ function Chat() {
   };
 
   // ─── Citation Handling ───
-  const openCitations = (sources) => {
+  const openCitations = (sources, initialExpandedIndex = 0) => {
     setActiveCitations(sources);
+    setExpandedCitationIndex(initialExpandedIndex);
     setShowCitationDrawer(true);
   };
 
@@ -135,17 +137,18 @@ function Chat() {
       const match = part.match(/\[Source\s+(\d+)\]/);
       if (match) {
         const idx = parseInt(match[1]);
-        const source = sources.find((s) => s.source_index === idx);
+        const sourceIndexInList = sources.findIndex((s) => s.source_index === idx);
         return (
           <span
             key={i}
             className="citation-badge"
-            onClick={() => source && openCitations([source])}
+            onClick={() => openCitations(sources, sourceIndexInList >= 0 ? sourceIndexInList : 0)}
             title={source ? `${source.document_title} — Page ${source.page_number || '?'}` : ''}
           >
             📎 Source {idx}
           </span>
         );
+
       }
       return <span key={i}>{part}</span>;
     });
@@ -276,18 +279,36 @@ function Chat() {
           <button className="btn-icon" onClick={() => setShowCitationDrawer(false)}>✕</button>
         </div>
         <div className="citation-drawer-body">
-          {activeCitations.map((source, i) => (
-            <div key={i} className="citation-detail">
-              <div className="citation-doc-title">
-                📄 {source.document_title}
+          {activeCitations.map((source, i) => {
+            const isExpanded = expandedCitationIndex === i;
+            return (
+              <div
+                key={i}
+                className={`citation-detail ${isExpanded ? 'expanded' : ''}`}
+                onClick={() => setExpandedCitationIndex(isExpanded ? null : i)}
+                style={{ cursor: 'pointer', transition: 'all 0.3s ease' }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                  <div>
+                    <div className="citation-doc-title">
+                      📄 {source.document_title}
+                    </div>
+                    {source.page_number && (
+                      <div className="citation-page">Page {source.page_number}</div>
+                    )}
+                  </div>
+                  <span style={{ fontSize: '11px', color: 'var(--accent)', fontWeight: 600, padding: '2px 6px', background: 'rgba(92, 200, 232, 0.1)', borderRadius: '4px' }}>
+                    {isExpanded ? '▲ Collapse' : '▼ Expand'}
+                  </span>
+                </div>
+                <div className={`citation-snippet ${isExpanded ? 'full' : 'preview'}`}>
+                  {source.snippet}
+                </div>
               </div>
-              {source.page_number && (
-                <div className="citation-page">Page {source.page_number}</div>
-              )}
-              <div className="citation-snippet">{source.snippet}</div>
-            </div>
-          ))}
+            );
+          })}
         </div>
+
       </div>
 
       {/* Drawer Backdrop */}
